@@ -174,6 +174,42 @@ class PlanificadorDisco:
         
         return solicitud
 
+    def c_scan_optimizado(self, posicion_actual):
+        """
+        Implementa el algoritmo C-SCAN (Circular SCAN).
+        
+        A diferencia del SCAN tradicional, C-SCAN siempre se mueve en una dirección,
+        y cuando llega al final, vuelve al inicio para comenzar de nuevo.
+        Este comportamiento reduce la varianza en los tiempos de espera.
+        
+        Args:
+            posicion_actual (int): Posición actual del cabezal
+        
+        Returns:
+            Solicitud: Siguiente solicitud a procesar, o None si no hay solicitudes
+        """
+        if not self.solicitudes:
+            return None
+        
+        # Obtener todas las solicitudes adelante de la posición actual
+        solicitudes_adelante = [s for s in self.solicitudes if s.posicion >= posicion_actual]
+        
+        if solicitudes_adelante:
+            # Si hay solicitudes adelante, tomar la más cercana
+            solicitudes_adelante.sort(key=lambda x: x.posicion)
+            solicitud = solicitudes_adelante[0]
+            self.solicitudes.remove(solicitud)
+        else:
+            # Si no hay solicitudes adelante, volver al inicio
+            self.posicion_actual = 0
+            self.solicitudes.sort(key=lambda x: x.posicion)
+            if self.solicitudes:
+                solicitud = self.solicitudes.pop(0)
+            else:
+                return None
+        
+        return solicitud
+
     def fifo_con_envejecimiento(self):
         """FIFO con sistema de prioridades y envejecimiento"""
         if not self.solicitudes:
